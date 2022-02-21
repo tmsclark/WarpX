@@ -127,20 +127,48 @@ CoarsenIO::Coarsen ( MultiFab& mf_dst,
 
     // Convert BoxArray of source MultiFab to staggering of destination MultiFab and coarsen it
     BoxArray ba_tmp = amrex::convert( mf_src.boxArray(), mf_dst.ixType().toIntVect() );
-    AMREX_ALWAYS_ASSERT_WITH_MESSAGE( ba_tmp.coarsenable( crse_ratio ),
-        "source MultiFab converted to staggering of destination MultiFab is not coarsenable" );
+    //AMREX_ALWAYS_ASSERT_WITH_MESSAGE( ba_tmp.coarsenable( crse_ratio ),
+    //    "source MultiFab converted to staggering of destination MultiFab is not coarsenable" );
+    if(ba_tmp.coarsenable(crse_ratio)==false){
+        Box MinBox = ba_tmp.minimalBox();
+        BoxArray ba_all_box(MinBox);
+        BoxArray ba_box=ba_all_box;
+        for(int i=0;i<AMREX_SPACEDIM;i++){
+            amrex::Print() << "AMREX_SPACEDIM"<< AMREX_SPACEDIM <<'\n';
+            ba_box.growHi(i,-crse_ratio[i]/2);
+            if(crse_ratio[i]%2==0) ba_box.growLo(i,-crse_ratio[i]/2);
+            else ba_box.growLo(i,-crse_ratio[i]/2-1);
+            amrex::Print() << "ba_box"<< ba_box <<'\n';
+        }
+        ba_box.coarsen(crse_ratio);
+        Box MinBox_csrn = ba_box.minimalBox();
+        BoxArray ba_sized=ba_box.maxSize(MinBox_csrn.length());
+        amrex::Print() << "ba_sized" << ba_sized << '\n';
+        DistributionMapping dm_copy =  amrex::MakeSimilarDM(ba_sized, ba_tmp, mf_src.DistributionMap(), ngrowvect);
+        MultiFab mf_tmp_crsn( ba_sized, dm_copy, ncomp, 0, MFInfo(), FArrayBoxFactory() );
+        BoxArray ba_refine=ba_sized.refine(crse_ratio);
+        MultiFab mf_tmp_refine( ba_refine, dm_copy, ncomp, 0, MFInfo(), FArrayBoxFactory() );
+        mf_tmp_crsn.ParallelCopy( mf_tmp_refine, 0, dcomp, ncomp );
+        CoarsenIO::Loop( mf_tmp_crsn, mf_tmp_refine, 0, scomp, ncomp, ngrowvect, crse_ratio );
+        mf_dst.ParallelCopy( mf_tmp_crsn, 0, dcomp, ncomp );
+        amrex::Print() << "Minimal Box" << MinBox << '\n';
+    }
+    else{
+    amrex::Print() << "ba_tmp before coarsen" << ba_tmp << '\n';
     ba_tmp.coarsen( crse_ratio );
-
-    if ( ba_tmp == mf_dst.boxArray() and mf_src.DistributionMap() == mf_dst.DistributionMap() )
-        CoarsenIO::Loop( mf_dst, mf_src, dcomp, scomp, ncomp, ngrowvect, crse_ratio );
-    else
-    {
-        // Cannot coarsen into MultiFab with different BoxArray or DistributionMapping:
-        // 1) create temporary MultiFab on coarsened version of source BoxArray with same DistributionMapping
-        MultiFab mf_tmp( ba_tmp, mf_src.DistributionMap(), ncomp, 0, MFInfo(), FArrayBoxFactory() );
-        // 2) interpolate from mf_src to mf_tmp (start writing into component 0)
-        CoarsenIO::Loop( mf_tmp, mf_src, 0, scomp, ncomp, ngrowvect, crse_ratio );
-        // 3) copy from mf_tmp to mf_dst (with different BoxArray or DistributionMapping)
-        mf_dst.ParallelCopy( mf_tmp, 0, dcomp, ncomp );
+    amrex::Print() << ba_tmp << '\n';
+        if ( ba_tmp == mf_dst.boxArray() and mf_src.DistributionMap() == mf_dst.DistributionMap() )
+            CoarsenIO::Loop( mf_dst, mf_src, dcomp, scomp, ncomp, ngrowvect, crse_ratio );
+        else
+        {
+            // Cannot coarsen into MultiFab with different BoxArray or DistributionMapping:
+            // 1) create temporary MultiFab on coarsened version of source BoxArray with same DistributionMapping
+            MultiFab mf_tmp( ba_tmp, mf_src.DistributionMap(), ncomp, 0, MFInfo(), FArrayBoxFactory() );
+            // 2) interpolate from mf_src to mf_tmp (start writing into component 0)
+            CoarsenIO::Loop( mf_tmp, mf_src, 0, scomp, ncomp, ngrowvect, crse_ratio );
+            // 3) copy from mf_tmp to mf_dst (with different BoxArray or DistributionMapping)
+            mf_dst.ParallelCopy( mf_tmp, 0, dcomp, ncomp );
+    }
     }
 }
+

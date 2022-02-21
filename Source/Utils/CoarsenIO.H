@@ -61,7 +61,7 @@ namespace CoarsenIO{
             if ( cr[l] == 1 ) idx_min[l] = ic[l]-sc[l]*(1-sf[l]); // no coarsening
             else              idx_min[l] = ic[l]*cr[l]+static_cast<int>(cr[l]/2)*(1-sc[l])-(1-sf[l]);
         }
-
+        std::cout << "idx_min" << idx_min[0] << "," << idx_min[1] << "," << idx_min[1] << '\n';
         // Auxiliary integer variables
         const int numx = np[0];
         const int numy = np[1];
