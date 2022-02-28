@@ -148,7 +148,7 @@ CoarsenIO::Coarsen ( MultiFab& mf_dst,
         MultiFab mf_tmp_crsn( ba_sized, dm_copy, ncomp, 0, MFInfo(), FArrayBoxFactory() );
         BoxArray ba_refine=ba_sized.refine(crse_ratio);
         MultiFab mf_tmp_refine( ba_refine, dm_copy, ncomp, 0, MFInfo(), FArrayBoxFactory() );
-        mf_tmp_crsn.ParallelCopy( mf_tmp_refine, 0, dcomp, ncomp );
+        //mf_tmp_crsn.ParallelCopy( mf_tmp_refine, 0, dcomp, ncomp );
         CoarsenIO::Loop( mf_tmp_crsn, mf_tmp_refine, 0, scomp, ncomp, ngrowvect, crse_ratio );
         mf_dst.ParallelCopy( mf_tmp_crsn, 0, dcomp, ncomp );
         amrex::Print() << "Minimal Box" << MinBox << '\n';
