@@ -32,7 +32,8 @@
  * Determine the timestep of the simulation. */
 void
 WarpX::ComputeDt ()
-{
+{   
+    //if (FinelevInit_flag) max_level=finestLevel();
     const amrex::Real* dx = geom[max_level].CellSize();
     amrex::Real deltat = 0.;
 
@@ -73,6 +74,7 @@ WarpX::ComputeDt ()
 
     if (do_subcycling) {
         for (int lev = max_level-1; lev >= 0; --lev) {
+            dt[lev] = dt[lev+1] * refRatio(lev)[0];
         }
     }
 

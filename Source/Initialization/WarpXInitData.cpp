@@ -370,11 +370,10 @@ WarpX::InitData ()
 #endif
 
     if (restart_chkfile.empty())
-    { 
+    {   
         ComputeDt();
-        finestLevel();
-        WarpX::PrintDtDxDyDz();
         InitFromScratch();
+        WarpX::PrintDtDxDyDz();
     }
     else
     {

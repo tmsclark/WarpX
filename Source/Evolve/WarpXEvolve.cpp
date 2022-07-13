@@ -397,8 +397,9 @@ WarpX::OneStep_nosub (Real cur_time)
         const int coarse_lev = 0;
         regrid(coarse_lev, cur_time);
         mypc->Redistribute();
+        //FinelevInit_flag=true;
         warpx.ComputeDt();
-        PrintDtDxDyDz ();
+        PrintDtDxDyDz();
         Print() << Utils::TextMsg::Info(
                     "Remove the patch");
     }
@@ -829,6 +830,7 @@ WarpX::OneStep_sub1 (Real curtime)
         mypc->Redistribute();
                 Print() << Utils::TextMsg::Info(
                     "Remove the patch");
+        PrintDtDxDyDz();
         do_subcycling=0;
     }
 }
