@@ -33,7 +33,7 @@
 void
 WarpX::ComputeDt ()
 {   
-    //if (FinelevInit_flag) max_level=finestLevel();
+    if (WarpX::FinelevInit_flag) max_level=finestLevel();
     const amrex::Real* dx = geom[max_level].CellSize();
     amrex::Real deltat = 0.;
 
