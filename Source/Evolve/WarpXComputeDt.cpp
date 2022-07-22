@@ -33,12 +33,7 @@
 void
 WarpX::ComputeDt ()
 {   
-    //FinelevInit_flag is used because we cannot use finestLevel() the first time the function is called 
-    //finelev is finestLevel() or max_level to prevent initialisation issue
-    int finelev;
-    if (WarpX::FinelevInit_flag) finelev=finestLevel();
-    else finelev=max_level;
-    const amrex::Real* dx = geom[finelev].CellSize();
+    const amrex::Real* dx = geom[finestLevel()].CellSize();
     amrex::Real deltat = 0.;
 
     if (maxwell_solver_id == MaxwellSolverAlgo::PSATD) {
@@ -77,13 +72,13 @@ WarpX::ComputeDt ()
 
 
     if (do_subcycling) {
-        for (int lev = finelev-1; lev >= 0; --lev) {
+        for (int lev = finestLevel()-1; lev >= 0; --lev) {
             dt[lev] = dt[lev+1] * refRatio(lev)[0];
         }
     }
 
     if (do_electrostatic != ElectrostaticSolverAlgo::None) {
-        for (int lev=0; lev<=finelev; lev++) {
+        for (int lev=0; lev<=finestLevel(); lev++) {
             dt[lev] = const_dt;
         }
     }

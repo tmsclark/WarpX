@@ -397,7 +397,6 @@ WarpX::OneStep_nosub (Real cur_time)
         const int coarse_lev = 0;
         regrid(coarse_lev, cur_time);
         mypc->Redistribute();
-        WarpX::FinelevInit_flag=true;
         warpx.ComputeDt();
         PrintDtDxDyDz();
         Print() << Utils::TextMsg::Info(
