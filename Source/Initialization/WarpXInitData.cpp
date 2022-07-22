@@ -371,9 +371,11 @@ WarpX::InitData ()
 
     if (restart_chkfile.empty())
     {   
+        SetFinestLevel(max_level);
         ComputeDt();
         InitFromScratch();
         WarpX::PrintDtDxDyDz();
+
     }
     else
     {
@@ -404,6 +406,7 @@ WarpX::InitData ()
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nGrids Summary:\n";
+
         printGridSummary(std::cout, 0, finestLevel());
     }
 
@@ -468,6 +471,7 @@ WarpX::InitFromScratch ()
     const Real time = 0.0;
 
     AmrCore::InitFromScratch(time);  // This will call MakeNewLevelFromScratch
+    amrex::Print() << "just after AmrCore" << finestLevel()<< "\n";
 
     mypc->AllocData();
     mypc->InitData();
